@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "react-query";
-import { getMessageApi, joinRoomApi } from "../api/message";
+import { getMessageApi, joinRoomApi, sendMessageApi } from "../api/message";
 import { useStoreMessage } from "../../store/message/message";
 
 export const useGetMessage = () => {
@@ -21,5 +21,11 @@ export const useGetMessage = () => {
 export const useJoinRoom = () => {
   return useMutation({
     mutationFn: joinRoomApi,
+  });
+};
+
+export const useSendMessage = () => {
+  return useMutation({
+    mutationFn: sendMessageApi,
   });
 };

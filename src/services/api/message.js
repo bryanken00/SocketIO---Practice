@@ -10,9 +10,26 @@ export const getMessageApi = async () => {
   }
 };
 
-export const joinRoomApi = async () => {
+// Join Room API
+export const joinRoomApi = async ({ socketId, room }) => {
   try {
-    const result = await axiosAuth.post("/api/messages/message/joinRoom");
+    const result = await axiosAuth.post("/api/messages/message/joinRoom", {
+      socketId,
+      room,
+    });
+    return result.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Send Message API
+export const sendMessageApi = async ({ room, message }) => {
+  try {
+    const result = await axiosAuth.post("/api/messages/message/sendMessage", {
+      roomNumber: room, // Change this to match your API structure
+      message,
+    });
     return result.data;
   } catch (error) {
     throw error;

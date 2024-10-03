@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client"; // Import the socket.io-client
-import { useJoinRoom } from "./services/request/message";
+import { useJoinRoom, useSendMessage } from "./services/request/message";
 import { message as antMessage } from "antd";
 
-const SOCKET_SERVER_URL = "http://192.168.2.29:1166"; // Replace with your server URL
+const SOCKET_SERVER_URL = "http://192.168.2.29:3999"; // Replace with your server URL
 
 const SocketComponent = () => {
   const [socket, setSocket] = useState(null);
@@ -12,6 +12,7 @@ const SocketComponent = () => {
   const [receivedMessages, setReceivedMessages] = useState([]);
 
   const joinRoomApi = useJoinRoom();
+  const sendMessageApi = useSendMessage();
 
   // Establish connection to the server when the component mounts
   useEffect(() => {
@@ -50,18 +51,47 @@ const SocketComponent = () => {
   };
 
   const accessRoom = () => {
+    if (!socket || !room.trim()) {
+      console.error("Socket or room is not defined");
+      return;
+    }
+
     joinRoomApi.mutate(
-      {},
+      {
+        socketId: socket.id, // Pass the socket ID here
+        room: room, // The room to join
+      },
       {
         onSuccess: (data) => {
-          if (socket && room.trim()) {
-            // Emit the "joinRoom" event to the server
-            socket.emit("joinRoom", room);
-            console.log(`Joined room: ${room}`);
-          }
+          console.log(`Successfully joined room: ${room}`);
+          // No need to emit 'joinRoom' again from client-side
         },
         onError: (error) => {
           console.error("Failed to join room:", error);
+        },
+      }
+    );
+  };
+
+  const sendMessage_ = () => {
+    if (!socket || !room.trim() || !message.trim()) {
+      console.error("Socket, room, or message is not defined");
+      return;
+    }
+
+    sendMessageApi.mutate(
+      {
+        room: room, // Pass the room name
+        message: message, // Pass the message to send
+      },
+      {
+        onSuccess: (data) => {
+          console.log(`Message sent to room: ${room}`);
+          setMessage(""); // Clear the input field after sending
+          // No need to emit 'roomMessage' again from client-side
+        },
+        onError: (error) => {
+          console.error("Failed to send message:", error);
         },
       }
     );
@@ -86,7 +116,7 @@ const SocketComponent = () => {
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type a message"
         />
-        <button onClick={sendMessage}>Send Message</button>
+        <button onClick={sendMessage_}>Send Message</button>
       </div>
       <div>
         <h2>Messages in Room:</h2>
